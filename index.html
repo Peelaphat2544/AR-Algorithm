@@ -261,6 +261,55 @@
             letter-spacing: 1px; font-family: 'Orbitron', sans-serif;
         }
         .all-clear-credit span { color: #4facfe; }
+
+        /* NICKNAME & LEADERBOARD */
+        #player-nickname:focus {
+            border-color: #00cec9 !important;
+            box-shadow: 0 0 25px rgba(0, 206, 201, 0.4) !important;
+        }
+        #leaderboard-modal {
+            background: rgba(10, 10, 30, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 206, 201, 0.3);
+            border-radius: 24px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 0 50px rgba(0, 206, 201, 0.2);
+            text-align: center;
+        }
+        #leaderboard-title {
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, #f9ca24, #f0932b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(249, 202, 36, 0.3);
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .leaderboard-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 0.2s ease;
+        }
+        .leaderboard-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .leaderboard-cell {
+            padding: 12px 10px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.95rem;
+            font-family: 'Kanit', sans-serif;
+        }
+        .rank-1 { color: #f9ca24; font-weight: bold; }
+        .rank-2 { color: #dcdde1; font-weight: bold; }
+        .rank-3 { color: #e17055; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -271,9 +320,17 @@
         <div class="title-glow">AR ALGORITHM</div>
         <div class="title-glow" style="font-size: clamp(1.5rem, 3vw, 2.5rem); margin-top: 5px;">ADVENTURE</div>
         <div class="subtitle">เกมผจญภัยอัลกอริทึม ม.1</div>
+        
+        <!-- Nickname Input -->
+        <div style="margin: 15px 0 5px 0; width: 85%; max-width: 320px; text-align: center;">
+            <input type="text" id="player-nickname" placeholder="กรอกชื่อเล่นของคุณ..." maxlength="15" 
+                   style="width: 100%; padding: 12px 20px; font-size: 1.1rem; font-family: 'Kanit', sans-serif; text-align: center; border: 2px solid rgba(0, 206, 201, 0.4); border-radius: 50px; background: rgba(10, 10, 30, 0.6); color: #fff; outline: none; transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 206, 201, 0.1);">
+        </div>
+        
         <div class="start-btn-group">
             <button class="start-btn" id="start-btn-mouse">🖱️ เล่นด้วยเมาส์ / ทัชสกรีน</button>
             <button class="start-btn" id="start-btn-ar">📷 เล่นด้วย AR (ต้องมีกล้อง)</button>
+            <button class="start-btn" id="leaderboard-btn" style="background: linear-gradient(135deg, #fdcb6e, #f0932b); font-size: 1.05rem; padding: 10px 25px; box-shadow: 0 0 20px rgba(240, 147, 43, 0.3); margin-top: 5px;">🏆 ตารางจัดอันดับ</button>
         </div>
         <p style="color: rgba(255,255,255,0.4); margin-top: 15px; font-size: 0.8rem;">
             ลากบล็อกคำสั่ง → วางใน Command Zone → กดทดสอบ!
@@ -357,6 +414,32 @@
         </div>
     </div>
 
+    <!-- ===== LEADERBOARD OVERLAY ===== -->
+    <div id="leaderboard-screen" class="modal-screen" style="background: rgba(10, 10, 30, 0.95);">
+        <div id="leaderboard-modal">
+            <h1 id="leaderboard-title">🏆 LEADERBOARD</h1>
+            <div id="leaderboard-loading" style="color: #00cec9; margin: 20px 0; font-family: 'Kanit';">กำลังโหลดคะแนนแบบเรียลไทม์...</div>
+            <table class="leaderboard-table" id="leaderboard-table" style="display: none;">
+                <thead>
+                    <tr style="border-bottom: 2px solid rgba(0,206,201,0.3); color: #00cec9; font-family: 'Orbitron'; font-size: 0.8rem;">
+                        <th style="padding: 10px;">RANK</th>
+                        <th style="padding: 10px; text-align: left;">PLAYER</th>
+                        <th style="padding: 10px; text-align: right;">SCORE</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            <button class="modal-btn" id="close-leaderboard-btn" style="background: linear-gradient(135deg, #dfe6e9, #b2bec3); color: #2d3436; margin-top: 15px; padding: 10px 30px; font-size: 1rem;">❌ ปิด</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <!-- MediaPipe & Camera Utils -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
@@ -423,6 +506,167 @@
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
+
+    // ==================== FIREBASE & LEADERBOARD ====================
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    let useFirebase = false;
+    let db = null;
+    let auth = null;
+    let userUID = null;
+    let playerNickname = "";
+
+    function initFirebase() {
+        if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
+                useFirebase = true;
+                console.log("Firebase Leaderboard system activated online!");
+                
+                // Login anonymously
+                auth.signInAnonymously()
+                    .then(cred => {
+                        userUID = cred.user.uid;
+                        console.log("Anonymous auth successful, UID:", userUID);
+                    })
+                    .catch(err => {
+                        console.error("Firebase Anonymous Auth failed:", err);
+                    });
+            } catch (e) {
+                console.error("Firebase initialisation failed:", e);
+            }
+        } else {
+            console.log("Using Local Storage Leaderboard fallback.");
+        }
+    }
+
+    function savePlayerScore(name, finalScore) {
+        if (!name || name.trim() === "") name = "Anonymous Player";
+        playerNickname = name.trim();
+        
+        if (useFirebase && db && userUID) {
+            db.collection("leaderboard").doc(userUID).set({
+                uid: userUID,
+                name: playerNickname,
+                score: finalScore,
+                maxCombo: maxCombo,
+                levelCleared: currentLevelIndex + 1,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true })
+            .then(() => console.log("Score updated on Firebase!"))
+            .catch(err => console.error("Error saving score to Firebase:", err));
+        } else {
+            // Local Storage fallback
+            try {
+                let localScores = JSON.parse(localStorage.getItem("ar_algo_leaderboard") || "[]");
+                let existingIndex = localScores.findIndex(s => s.name.toLowerCase() === playerNickname.toLowerCase());
+                if (existingIndex !== -1) {
+                    if (finalScore > localScores[existingIndex].score) {
+                        localScores[existingIndex].score = finalScore;
+                        localScores[existingIndex].timestamp = new Date().toISOString();
+                    }
+                } else {
+                    localScores.push({
+                        name: playerNickname,
+                        score: finalScore,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                localScores.sort((a, b) => b.score - a.score);
+                localScores = localScores.slice(0, 10);
+                localStorage.setItem("ar_algo_leaderboard", JSON.stringify(localScores));
+                console.log("Score saved locally!");
+            } catch (e) {
+                console.error("LocalStorage save failed:", e);
+            }
+        }
+    }
+
+    function getTopScores() {
+        if (useFirebase && db) {
+            return db.collection("leaderboard")
+                .orderBy("score", "desc")
+                .limit(10)
+                .get()
+                .then(snapshot => {
+                    let scores = [];
+                    snapshot.forEach(doc => {
+                        scores.push(doc.data());
+                    });
+                    return scores;
+                })
+                .catch(err => {
+                    console.error("Firebase get scores failed, falling back to local:", err);
+                    return getLocalTopScores();
+                });
+        } else {
+            return Promise.resolve(getLocalTopScores());
+        }
+    }
+
+    function getLocalTopScores() {
+        try {
+            return JSON.parse(localStorage.getItem("ar_algo_leaderboard") || "[]");
+        } catch (e) {
+            console.error("LocalStorage get failed:", e);
+            return [];
+        }
+    }
+
+    function displayLeaderboard() {
+        const screen = document.getElementById('leaderboard-screen');
+        const loading = document.getElementById('leaderboard-loading');
+        const table = document.getElementById('leaderboard-table');
+        const body = document.getElementById('leaderboard-body');
+        
+        body.innerHTML = "";
+        loading.style.display = "block";
+        table.style.display = "none";
+        screen.classList.add('show');
+        
+        getTopScores().then(scores => {
+            loading.style.display = "none";
+            table.style.display = "table";
+            
+            if (scores.length === 0) {
+                body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px; font-family: 'Kanit';">ยังไม่มีคะแนนในตารางอันดับ</td></tr>`;
+                return;
+            }
+            
+            scores.forEach((s, idx) => {
+                const rank = idx + 1;
+                let rankClass = "";
+                if (rank === 1) rankClass = "rank-1";
+                else if (rank === 2) rankClass = "rank-2";
+                else if (rank === 3) rankClass = "rank-3";
+                
+                const row = document.createElement('tr');
+                row.className = "leaderboard-row";
+                row.innerHTML = `
+                    <td class="leaderboard-cell ${rankClass}" style="text-align: center; font-weight: bold; font-family: 'Orbitron';">${rank}</td>
+                    <td class="leaderboard-cell" style="text-align: left; font-weight: bold;">${s.name}</td>
+                    <td class="leaderboard-cell" style="text-align: right; color: #f9ca24; font-family: 'Orbitron'; font-weight: bold;">${s.score.toLocaleString()}</td>
+                `;
+                body.appendChild(row);
+            });
+        }).catch(err => {
+            console.error("Leaderboard display error:", err);
+            loading.innerText = "เกิดข้อผิดพลาดในการโหลดคะแนน";
+        });
+    }
+
+    function closeLeaderboard() {
+        document.getElementById('leaderboard-screen').classList.remove('show');
+    }
 
     // ==================== GAME STATE ====================
     let gameStarted = false;
@@ -831,6 +1075,10 @@
     }
 
     function startGame(arMode) {
+        const nicknameInput = document.getElementById('player-nickname');
+        playerNickname = nicknameInput.value.trim() || "Player";
+        localStorage.setItem("ar_algo_player_nickname", playerNickname);
+        
         initAudio();
         useAR = arMode;
         document.getElementById('splash-screen').style.display = 'none';
@@ -1181,12 +1429,14 @@
         document.getElementById('final-score').innerText = `คะแนนรวม: ${score.toLocaleString()} | Max Combo: x${maxCombo}`;
         document.getElementById('allclear-screen').classList.add('show');
         spawnParticles(canvasElement.width/2, canvasElement.height/2, '#f9ca24', 50);
+        savePlayerScore(playerNickname, score);
     }
 
     function gameOver() {
         clearInterval(timerInterval);
         document.getElementById('gameover-score').innerText = `คะแนนสุดท้าย: ${score.toLocaleString()}`;
         document.getElementById('gameover-screen').classList.add('show');
+        savePlayerScore(playerNickname, score);
     }
 
     function restartGame() {
@@ -1198,12 +1448,21 @@
 
     document.getElementById('start-btn-mouse').addEventListener('click', () => startGame(false));
     document.getElementById('start-btn-ar').addEventListener('click', () => startGame(true));
+    document.getElementById('leaderboard-btn').addEventListener('click', displayLeaderboard);
+    document.getElementById('close-leaderboard-btn').addEventListener('click', closeLeaderboard);
     document.getElementById('run-btn').addEventListener('click', runSolution);
     document.getElementById('clear-btn').addEventListener('click', clearWorkspace);
     document.getElementById('hint-btn').addEventListener('click', useHint);
     document.getElementById('next-level-btn').addEventListener('click', nextLevel);
     document.getElementById('retry-btn').addEventListener('click', restartGame);
     document.getElementById('replay-btn').addEventListener('click', restartGame);
+
+    window.addEventListener('load', () => {
+        const savedNickname = localStorage.getItem("ar_algo_player_nickname") || "";
+        const nicknameInput = document.getElementById('player-nickname');
+        if (nicknameInput) nicknameInput.value = savedNickname;
+        initFirebase();
+    });
 
     </script>
 </body>
