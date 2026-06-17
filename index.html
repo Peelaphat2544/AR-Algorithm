@@ -556,16 +556,18 @@
         playerNickname = name.trim();
         
         if (useFirebase && db) {
-            db.collection("leaderboard").doc(playerNickname).set({
-                uid: playerNickname,
-                name: playerNickname,
-                score: finalScore,
-                maxCombo: maxCombo,
-                levelCleared: currentLevelIndex + 1,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true })
-            .then(() => console.log("Score updated on Firebase!"))
-            .catch(err => console.error("Error saving score to Firebase:", err));
+            db.collection("leaderboard").doc(playerNickname).get().then(doc => {
+                if (!doc.exists || finalScore > doc.data().score) {
+                    db.collection("leaderboard").doc(playerNickname).set({
+                        uid: playerNickname,
+                        name: playerNickname,
+                        score: finalScore,
+                        maxCombo: maxCombo,
+                        levelCleared: currentLevelIndex + 1,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+            }).catch(err => console.error("Firebase save error:", err));
         } else {
             // Local Storage fallback
             try {
@@ -934,6 +936,76 @@
             solution: ["loop3", "fwd", "left", "if_wall", "right", "loop2", "fwd"],
             timeLimit: 90, hpPenalty: 35,
             grid: { rows: 6, cols: 6, start: [0,2], end: [5,2], walls: [[3,1], [4,1], [2,1]] }
+        },
+        {
+            level: 16, title: "หักศอกสองจังหวะ",
+            desc: "หลบหลีกในพื้นที่แคบ ลูป 3 -> ขวา -> กำแพง? ซ้าย -> ลูป 2",
+            toolbox: [
+                { id: "fwd", text: "⬆️ เดินหน้า", color: "#0984e3" },
+                { id: "left", text: "↩️ เลี้ยวซ้าย", color: "#e17055" },
+                { id: "right", text: "↪️ เลี้ยวขวา", color: "#00b894" },
+                { id: "loop2", text: "🔁 วนซ้ำ x2", color: "#6c5ce7" },
+                { id: "loop3", text: "🔁 วนซ้ำ x3", color: "#6c5ce7" },
+                { id: "if_wall", text: "🧱 ถ้ามีกำแพง", color: "#fdcb6e" }
+            ],
+            solution: ["loop3", "fwd", "right", "if_wall", "left", "loop2", "fwd"],
+            timeLimit: 90, hpPenalty: 35,
+            grid: { rows: 6, cols: 6, start: [0,0], end: [5,0], walls: [[3,1]] }
+        },
+        {
+            level: 17, title: "ซิกแซกแบบมืออาชีพ",
+            desc: "เดิน 2 ก้าว -> ซ้าย -> 2 ก้าว -> ขวา -> 2 ก้าว",
+            toolbox: [
+                { id: "fwd", text: "⬆️ เดินหน้า", color: "#0984e3" },
+                { id: "left", text: "↩️ เลี้ยวซ้าย", color: "#e17055" },
+                { id: "right", text: "↪️ เลี้ยวขวา", color: "#00b894" },
+                { id: "loop2", text: "🔁 วนซ้ำ x2", color: "#6c5ce7" }
+            ],
+            solution: ["loop2", "fwd", "left", "loop2", "fwd", "right", "loop2", "fwd"],
+            timeLimit: 100, hpPenalty: 40,
+            grid: { rows: 6, cols: 6, start: [0,5], end: [4,3], walls: [[2,4], [4,2]] }
+        },
+        {
+            level: 18, title: "กลลวงกำแพง!",
+            desc: "ด่านนี้ต้องใช้การตรวจกำแพง 2 รอบ!",
+            toolbox: [
+                { id: "fwd", text: "⬆️ เดินหน้า", color: "#0984e3" },
+                { id: "left", text: "↩️ เลี้ยวซ้าย", color: "#e17055" },
+                { id: "right", text: "↪️ เลี้ยวขวา", color: "#00b894" },
+                { id: "loop3", text: "🔁 วนซ้ำ x3", color: "#6c5ce7" },
+                { id: "if_wall", text: "🧱 ถ้ามีกำแพง", color: "#fdcb6e" }
+            ],
+            solution: ["loop3", "fwd", "if_wall", "right", "if_wall", "left", "loop3", "fwd"],
+            timeLimit: 110, hpPenalty: 40,
+            grid: { rows: 7, cols: 7, start: [0,0], end: [6,0], walls: [[4,0], [3,1]] }
+        },
+        {
+            level: 19, title: "อ้อมค่ายกล",
+            desc: "เดินหลบกำแพง 3 -> ขวา -> 3 -> ขวา -> 2",
+            toolbox: [
+                { id: "fwd", text: "⬆️ เดินหน้า", color: "#0984e3" },
+                { id: "right", text: "↪️ เลี้ยวขวา", color: "#00b894" },
+                { id: "loop2", text: "🔁 วนซ้ำ x2", color: "#6c5ce7" },
+                { id: "loop3", text: "🔁 วนซ้ำ x3", color: "#6c5ce7" }
+            ],
+            solution: ["loop3", "fwd", "right", "loop3", "fwd", "right", "loop2", "fwd"],
+            timeLimit: 120, hpPenalty: 45,
+            grid: { rows: 6, cols: 6, start: [0,0], end: [1,3], walls: [[1,1], [2,2], [2,1]] }
+        },
+        {
+            level: 20, title: "สุดยอดเซียนอัลกอริทึม!",
+            desc: "บล็อกยาวที่สุด! ลูป3 -> ขวา -> ลูป2 -> กำแพง? -> ซ้าย -> ลูป3 -> กำแพง? -> ขวา -> 1 ก้าว",
+            toolbox: [
+                { id: "fwd", text: "⬆️ เดินหน้า", color: "#0984e3" },
+                { id: "left", text: "↩️ เลี้ยวซ้าย", color: "#e17055" },
+                { id: "right", text: "↪️ เลี้ยวขวา", color: "#00b894" },
+                { id: "loop2", text: "🔁 วนซ้ำ x2", color: "#6c5ce7" },
+                { id: "loop3", text: "🔁 วนซ้ำ x3", color: "#6c5ce7" },
+                { id: "if_wall", text: "🧱 ถ้ามีกำแพง", color: "#fdcb6e" }
+            ],
+            solution: ["loop3", "fwd", "right", "loop2", "fwd", "if_wall", "left", "loop3", "fwd", "if_wall", "right", "fwd"],
+            timeLimit: 150, hpPenalty: 50,
+            grid: { rows: 8, cols: 8, start: [0,0], end: [6,3], walls: [[3,3], [7,2]] }
         }
     ];
 
@@ -1545,6 +1617,7 @@
     }
 
     function runSolution() {
+        if (document.getElementById('levelcomplete-screen').classList.contains('show')) return;
         const lvl = levels[currentLevelIndex];
         if (!lvl) return;
         if (workspaceBlocks.length === 0) { showFeedback('🤔','ยังไม่มีคำสั่ง!','ลากบล็อกมาวางก่อนนะ','#fdcb6e'); return; }
