@@ -310,6 +310,10 @@
         .rank-1 { color: #f9ca24; font-weight: bold; }
         .rank-2 { color: #dcdde1; font-weight: bold; }
         .rank-3 { color: #e17055; font-weight: bold; }
+        .delete-score-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -425,6 +429,7 @@
                         <th style="padding: 10px;">RANK</th>
                         <th style="padding: 10px; text-align: left;">PLAYER</th>
                         <th style="padding: 10px; text-align: right;">SCORE</th>
+                        <th style="padding: 10px; text-align: center;">DEL</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body">
@@ -622,6 +627,8 @@
         }
     }
 
+    const ADMIN_PASSWORD = "admin1234"; // รหัสผ่านสำหรับลบข้อมูลชื่อผู้เล่น
+
     function displayLeaderboard() {
         const screen = document.getElementById('leaderboard-screen');
         const loading = document.getElementById('leaderboard-loading');
@@ -638,7 +645,7 @@
             table.style.display = "table";
             
             if (scores.length === 0) {
-                body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px; font-family: 'Kanit';">ยังไม่มีคะแนนในตารางอันดับ</td></tr>`;
+                body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: rgba(255,255,255,0.4); padding: 20px; font-family: 'Kanit';">ยังไม่มีคะแนนในตารางอันดับ</td></tr>`;
                 return;
             }
             
@@ -655,6 +662,9 @@
                     <td class="leaderboard-cell ${rankClass}" style="text-align: center; font-weight: bold; font-family: 'Orbitron';">${rank}</td>
                     <td class="leaderboard-cell" style="text-align: left; font-weight: bold;">${s.name}</td>
                     <td class="leaderboard-cell" style="text-align: right; color: #f9ca24; font-family: 'Orbitron'; font-weight: bold;">${s.score.toLocaleString()}</td>
+                    <td class="leaderboard-cell" style="text-align: center;">
+                        <button class="delete-score-btn" onclick="requestDeleteScore('${s.uid || ''}', '${s.name}')" style="background: none; border: none; cursor: pointer; font-size: 1rem; color: #e74c3c; opacity: 0.6; transition: opacity 0.2s;">🗑️</button>
+                    </td>
                 `;
                 body.appendChild(row);
             });
@@ -663,6 +673,52 @@
             loading.innerText = "เกิดข้อผิดพลาดในการโหลดคะแนน";
         });
     }
+
+    function deletePlayerScore(uid, name) {
+        if (useFirebase && db) {
+            if (uid) {
+                return db.collection("leaderboard").doc(uid).delete();
+            } else {
+                return db.collection("leaderboard").where("name", "==", name).get()
+                    .then(snapshot => {
+                        let batch = db.batch();
+                        snapshot.forEach(doc => {
+                            batch.delete(doc.ref);
+                        });
+                        return batch.commit();
+                    });
+            }
+        } else {
+            try {
+                let localScores = JSON.parse(localStorage.getItem("ar_algo_leaderboard") || "[]");
+                localScores = localScores.filter(s => s.name !== name);
+                localStorage.setItem("ar_algo_leaderboard", JSON.stringify(localScores));
+                return Promise.resolve();
+            } catch (e) {
+                return Promise.reject(e);
+            }
+        }
+    }
+
+    function requestDeleteScore(uid, name) {
+        const password = prompt(`กรุณากรอกรหัสผ่านผู้ดูแลระบบเพื่อลบชื่อ "${name}":`);
+        if (password === null) return;
+        
+        if (password === ADMIN_PASSWORD) {
+            deletePlayerScore(uid, name)
+                .then(() => {
+                    showFeedback('🗑️', 'ลบรายชื่อสำเร็จ!', `ลบชื่อ ${name} แล้ว`, '#e74c3c');
+                    displayLeaderboard();
+                })
+                .catch(err => {
+                    alert("ไม่สามารถลบชื่อได้: " + err);
+                });
+        } else {
+            alert("รหัสผ่านไม่ถูกต้อง! ไม่สามารถลบได้");
+        }
+    }
+
+    window.requestDeleteScore = requestDeleteScore;
 
     function closeLeaderboard() {
         document.getElementById('leaderboard-screen').classList.remove('show');
