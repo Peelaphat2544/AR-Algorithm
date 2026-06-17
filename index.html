@@ -24,7 +24,8 @@
         /* ===== SPLASH SCREEN ===== */
         #splash-screen {
             position: absolute; inset: 0; z-index: 100;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding: 40px 20px; overflow-y: auto; overflow-x: hidden;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
         #splash-screen .title-glow {
@@ -95,12 +96,12 @@
             color: rgba(255,255,255,0.5); letter-spacing: 2px; margin-bottom: 4px;
         }
         #level-title {
-            font-size: 0.95rem; font-weight: 700;
+            font-size: 1.25rem; font-weight: 700;
             background: linear-gradient(90deg, #00f2fe, #4facfe);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        #mission-text { color: rgba(255,255,255,0.8); font-size: 0.8rem; }
+        #mission-text { color: rgba(255,255,255,0.8); font-size: 1.1rem; }
         
         /* HP Bar */
         #hp-section { text-align: center; min-width: 180px; }
@@ -114,13 +115,13 @@
             background: linear-gradient(90deg, #00b894, #00cec9, #6c5ce7);
             transition: width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        #hp-text { color: #00cec9; font-weight: 600; font-size: 0.85rem; }
-        #lives-display { margin-top: 3px; font-size: 1.1rem; letter-spacing: 2px; }
+        #hp-text { color: #00cec9; font-weight: 600; font-size: 1.1rem; }
+        #lives-display { margin-top: 3px; font-size: 1.5rem; letter-spacing: 2px; }
 
         /* Score & Combo */
         #stats-section { text-align: right; }
         #score-display {
-            font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 900;
+            font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900;
             background: linear-gradient(90deg, #f9ca24, #f0932b);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -130,7 +131,7 @@
             transition: all 0.3s ease;
         }
         #timer-display {
-            font-family: 'Orbitron', sans-serif; font-size: 0.9rem;
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
             color: #dfe6e9; margin-top: 3px;
         }
 
@@ -334,7 +335,23 @@
         <div class="start-btn-group">
             <button class="start-btn" id="start-btn-mouse">🖱️ เล่นด้วยเมาส์ / ทัชสกรีน</button>
             <button class="start-btn" id="start-btn-ar">📷 เล่นด้วย AR (ต้องมีกล้อง)</button>
-            <button class="start-btn" id="leaderboard-btn" style="background: linear-gradient(135deg, #fdcb6e, #f0932b); font-size: 1.05rem; padding: 10px 25px; box-shadow: 0 0 20px rgba(240, 147, 43, 0.3); margin-top: 5px;">🏆 ตารางจัดอันดับ</button>
+        </div>
+
+        <!-- NEW LEADERBOARD ON FRONT PAGE -->
+        <div id="front-leaderboard" style="margin-top: 30px; width: 100%; max-width: 500px; background: rgba(10, 10, 30, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(0, 206, 201, 0.3); border-radius: 20px; padding: 20px; box-shadow: 0 0 30px rgba(0, 206, 201, 0.15);">
+            <h2 style="font-family: 'Orbitron'; font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg, #f9ca24, #f0932b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; margin-bottom: 15px; text-shadow: 0 0 10px rgba(249, 202, 36, 0.3);">🏆 LEADERBOARD</h2>
+            <div id="leaderboard-loading" style="color: #00cec9; text-align: center; font-family: 'Kanit'; margin: 20px 0;">กำลังโหลดคะแนนแบบเรียลไทม์...</div>
+            <table class="leaderboard-table" id="leaderboard-table" style="display: none; width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid rgba(0,206,201,0.3); color: #00cec9; font-family: 'Orbitron'; font-size: 0.9rem;">
+                        <th style="padding: 10px; text-align: center;">RANK</th>
+                        <th style="padding: 10px; text-align: left;">PLAYER</th>
+                        <th style="padding: 10px; text-align: right;">SCORE</th>
+                        <th style="padding: 10px; text-align: center;">DEL</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+            </table>
         </div>
         <p style="color: rgba(255,255,255,0.4); margin-top: 15px; font-size: 0.8rem;">
             ลากบล็อกคำสั่ง → วางใน Command Zone → กดทดสอบ!
@@ -418,27 +435,7 @@
         </div>
     </div>
 
-    <!-- ===== LEADERBOARD OVERLAY ===== -->
-    <div id="leaderboard-screen" class="modal-screen" style="background: rgba(10, 10, 30, 0.95);">
-        <div id="leaderboard-modal">
-            <h1 id="leaderboard-title">🏆 LEADERBOARD</h1>
-            <div id="leaderboard-loading" style="color: #00cec9; margin: 20px 0; font-family: 'Kanit';">กำลังโหลดคะแนนแบบเรียลไทม์...</div>
-            <table class="leaderboard-table" id="leaderboard-table" style="display: none;">
-                <thead>
-                    <tr style="border-bottom: 2px solid rgba(0,206,201,0.3); color: #00cec9; font-family: 'Orbitron'; font-size: 0.8rem;">
-                        <th style="padding: 10px;">RANK</th>
-                        <th style="padding: 10px; text-align: left;">PLAYER</th>
-                        <th style="padding: 10px; text-align: right;">SCORE</th>
-                        <th style="padding: 10px; text-align: center;">DEL</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    <!-- Dynamic Rows -->
-                </tbody>
-            </table>
-            <button class="modal-btn" id="close-leaderboard-btn" style="background: linear-gradient(135deg, #dfe6e9, #b2bec3); color: #2d3436; margin-top: 15px; padding: 10px 30px; font-size: 1rem;">❌ ปิด</button>
-        </div>
-    </div>
+    <!-- ===== LEADERBOARD OVERLAY REMOVED (Moved to front page) ===== -->
 
     <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -496,17 +493,17 @@
         canvasElement.height = window.innerHeight;
 
         if (isMobile) {
-            ui.toolboxZone.width = 160;
+            ui.toolboxZone.width = 200;
             ui.toolboxZone.x = 10;
-            ui.dropZone.width = 160;
-            ui.dropZone.x = window.innerWidth - 170;
-            ui.blockHeight = 45;
+            ui.dropZone.width = 200;
+            ui.dropZone.x = window.innerWidth - 210;
+            ui.blockHeight = 55;
         } else {
-            ui.toolboxZone.width = 210;
+            ui.toolboxZone.width = 260;
             ui.toolboxZone.x = 25;
-            ui.dropZone.width = 230;
-            ui.dropZone.x = window.innerWidth - 290;
-            ui.blockHeight = 52;
+            ui.dropZone.width = 280;
+            ui.dropZone.x = window.innerWidth - 320;
+            ui.blockHeight = 65;
         }
     }
     window.addEventListener('resize', resizeCanvas);
@@ -630,15 +627,15 @@
     const ADMIN_PASSWORD = "admin1234"; // รหัสผ่านสำหรับลบข้อมูลชื่อผู้เล่น
 
     function displayLeaderboard() {
-        const screen = document.getElementById('leaderboard-screen');
         const loading = document.getElementById('leaderboard-loading');
         const table = document.getElementById('leaderboard-table');
         const body = document.getElementById('leaderboard-body');
         
+        if(!loading || !table || !body) return;
+
         body.innerHTML = "";
         loading.style.display = "block";
         table.style.display = "none";
-        screen.classList.add('show');
         
         getTopScores().then(scores => {
             loading.style.display = "none";
@@ -720,9 +717,7 @@
 
     window.requestDeleteScore = requestDeleteScore;
 
-    function closeLeaderboard() {
-        document.getElementById('leaderboard-screen').classList.remove('show');
-    }
+    // closeLeaderboard removed
 
     // ==================== GAME STATE ====================
     let gameStarted = false;
@@ -931,12 +926,12 @@
         drawRoundedRect(ctx, x, y, w, h/2, ui.blockRadius); ctx.fill();
         if (index >= 0) {
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.beginPath(); ctx.arc(x+18, y+h/2, 12, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = 'white'; ctx.font = 'bold 13px Orbitron';
-            ctx.textAlign = 'center'; ctx.fillText(index+1, x+18, y+h/2+5); ctx.textAlign = 'start';
+            ctx.beginPath(); ctx.arc(x+22, y+h/2, 16, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'white'; ctx.font = 'bold 15px Orbitron';
+            ctx.textAlign = 'center'; ctx.fillText(index+1, x+22, y+h/2+5); ctx.textAlign = 'start';
         }
-        ctx.fillStyle = 'white'; ctx.font = 'bold 15px Kanit';
-        ctx.fillText(text, x + (index >= 0 ? 36 : 12), y + h/2 + 5);
+        ctx.fillStyle = 'white'; ctx.font = 'bold 18px Kanit';
+        ctx.fillText(text, x + (index >= 0 ? 45 : 18), y + h/2 + 6);
         if (hovered) {
             ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
             drawRoundedRect(ctx, x, y, w, h, ui.blockRadius); ctx.stroke();
@@ -985,7 +980,7 @@
         const grid = lvl.grid;
         const centerX = canvasElement.width / 2;
         const centerY = canvasElement.height / 2 + 30;
-        const cellSize = Math.min(50, (canvasElement.width - 550) / grid.cols, (canvasElement.height - 300) / grid.rows);
+        const cellSize = Math.min(80, (canvasElement.width - 650) / grid.cols, (canvasElement.height - 350) / grid.rows);
         if (cellSize < 20) return;
         const gridW = grid.cols * cellSize, gridH = grid.rows * cellSize;
         const startX = centerX - gridW/2, startY = centerY - gridH/2;
@@ -997,7 +992,7 @@
 
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         drawRoundedRect(ctx, startX-15, startY-35, gridW+30, gridH+50, 14); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = 'bold 11px Orbitron';
+        ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = 'bold 16px Orbitron';
         ctx.fillText('🗺️ MAP', startX - 8, startY - 18);
 
         if (robotTrail.length > 1) {
@@ -1018,8 +1013,8 @@
             const ty = startY + (grid.rows-1-tp.row) * cellSize + cellSize/2;
             ctx.fillStyle = `rgba(0,206,201,${0.3 + 0.15*Math.sin(time*3+idx)})`;
             ctx.beginPath(); ctx.arc(tx, ty, 4, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = 'bold 9px Orbitron';
-            ctx.textAlign = 'center'; ctx.fillText(idx, tx, ty - 8); ctx.textAlign = 'start';
+            ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = 'bold 14px Orbitron';
+            ctx.textAlign = 'center'; ctx.fillText(idx, tx, ty - 10); ctx.textAlign = 'start';
         });
 
         for (let r = 0; r < grid.rows; r++) {
@@ -1035,7 +1030,7 @@
         const startCellY = startY + (grid.rows-1-grid.start[0]) * cellSize;
         const startCellX = startX + grid.start[1] * cellSize;
         ctx.fillStyle = 'rgba(0,184,148,0.25)'; ctx.fillRect(startCellX, startCellY, cellSize, cellSize);
-        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '9px Kanit'; ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = 'bold 12px Kanit'; ctx.textAlign = 'center';
         ctx.fillText('START', startCellX + cellSize/2, startCellY + cellSize - 4); ctx.textAlign = 'start';
 
         const ey = startY + (grid.rows-1-grid.end[0]) * cellSize + cellSize/2;
@@ -1061,8 +1056,8 @@
         if (atGoal && workspaceBlocks.length > 0) {
             ctx.fillStyle = `rgba(0,255,100,${0.3 + 0.2*Math.sin(time*5)})`;
             ctx.fillRect(startX + grid.end[1]*cellSize, startY + (grid.rows-1-grid.end[0])*cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#2ecc71'; ctx.font = 'bold 11px Kanit'; ctx.textAlign = 'center';
-            ctx.fillText('✓ ถึงแล้ว!', ex, ey + cellSize/2 + 5);
+            ctx.fillStyle = '#2ecc71'; ctx.font = 'bold 16px Kanit'; ctx.textAlign = 'center';
+            ctx.fillText('✓ ถึงแล้ว!', ex, ey + cellSize/2 + 10);
             ctx.textAlign = 'start';
         }
     }
@@ -1079,7 +1074,7 @@
         ctx.strokeStyle = 'rgba(108,92,231,0.35)'; ctx.lineWidth = 1.5;
         drawRoundedRect(ctx, ui.toolboxZone.x, ui.toolboxZone.y, ui.toolboxZone.width, ui.toolboxZone.height, 14);
         ctx.stroke();
-        ctx.fillStyle = '#a29bfe'; ctx.font = 'bold 12px Orbitron';
+        ctx.fillStyle = '#a29bfe'; ctx.font = 'bold 16px Orbitron';
         ctx.fillText('🧰 TOOLBOX', ui.toolboxZone.x + 12, ui.toolboxZone.y + 24);
         levelData.toolbox.forEach((tool, i) => {
             const tx = ui.toolboxZone.x + 8, ty = ui.toolboxZone.y + 36 + i*(ui.blockHeight+ui.blockMargin);
@@ -1096,7 +1091,7 @@
         ctx.strokeStyle = `rgba(0,206,201,${0.3 + 0.12*Math.sin(time*3)})`; ctx.lineWidth = 2;
         drawRoundedRect(ctx, ui.dropZone.x, ui.dropZone.y, ui.dropZone.width, ui.dropZone.height, 14);
         ctx.stroke(); ctx.setLineDash([]);
-        ctx.fillStyle = '#00cec9'; ctx.font = 'bold 12px Orbitron';
+        ctx.fillStyle = '#00cec9'; ctx.font = 'bold 16px Orbitron';
         ctx.fillText('📦 COMMAND ZONE', ui.dropZone.x + 10, ui.dropZone.y + 24);
 
         workspaceBlocks.forEach((block, i) => {
@@ -1110,8 +1105,8 @@
         });
         if (workspaceBlocks.length === 0) {
             ctx.fillStyle = `rgba(255,255,255,${0.25 + 0.12*Math.sin(time*2)})`;
-            ctx.font = '13px Kanit'; ctx.textAlign = 'center';
-            ctx.fillText('🖱️ ลากบล็อกมาวางที่นี่', ui.dropZone.x + ui.dropZone.width/2, ui.dropZone.y + 70);
+            ctx.font = '18px Kanit'; ctx.textAlign = 'center';
+            ctx.fillText('🖱️ ลากบล็อกมาวางที่นี่', ui.dropZone.x + ui.dropZone.width/2, ui.dropZone.y + 80);
             ctx.textAlign = 'start';
         }
         drawMiniGrid(ctx);
@@ -1504,8 +1499,6 @@
 
     document.getElementById('start-btn-mouse').addEventListener('click', () => startGame(false));
     document.getElementById('start-btn-ar').addEventListener('click', () => startGame(true));
-    document.getElementById('leaderboard-btn').addEventListener('click', displayLeaderboard);
-    document.getElementById('close-leaderboard-btn').addEventListener('click', closeLeaderboard);
     document.getElementById('run-btn').addEventListener('click', runSolution);
     document.getElementById('clear-btn').addEventListener('click', clearWorkspace);
     document.getElementById('hint-btn').addEventListener('click', useHint);
@@ -1518,6 +1511,7 @@
         const nicknameInput = document.getElementById('player-nickname');
         if (nicknameInput) nicknameInput.value = savedNickname;
         initFirebase();
+        setTimeout(() => displayLeaderboard(), 500);
     });
 
     </script>
