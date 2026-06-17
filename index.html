@@ -555,9 +555,9 @@
         if (!name || name.trim() === "") name = "Anonymous Player";
         playerNickname = name.trim();
         
-        if (useFirebase && db && userUID) {
-            db.collection("leaderboard").doc(userUID).set({
-                uid: userUID,
+        if (useFirebase && db) {
+            db.collection("leaderboard").doc(playerNickname).set({
+                uid: playerNickname,
                 name: playerNickname,
                 score: finalScore,
                 maxCombo: maxCombo,
