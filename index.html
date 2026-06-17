@@ -12,7 +12,13 @@
         body { overflow: hidden; background: #0a0a1a; font-family: 'Kanit', sans-serif; }
         
         #game-container { position: relative; width: 100vw; height: 100vh; }
-        video { display: none; }
+        video {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
         /* ===== SPLASH SCREEN ===== */
@@ -279,7 +285,7 @@
 
     <!-- ===== GAME AREA ===== -->
     <div id="game-container">
-        <video id="webcam" autoplay playsinline></video>
+        <video id="webcam" autoplay playsinline muted></video>
         <canvas id="output_canvas"></canvas>
         <div id="damage-flash"></div>
 
@@ -352,11 +358,11 @@
     </div>
 
     <!-- MediaPipe & Camera Utils -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4.1675469240/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.4.1675469240/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.8.0/dist/tf-core.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.8.0/dist/tf-converter.min.js" crossorigin="anonymous"></script>
     <script>
     // ==================== AUDIO ====================
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -842,7 +848,9 @@
     }
 
     function startAR() {
-        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        showFeedback('⏳', 'กำลังโหลดระบบ AR...', 'กรุณารอสักครู่...', '#00cec9');
+        
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`});
         hands.setOptions({
             maxNumHands: 1,
             modelComplexity: 1,
@@ -900,10 +908,18 @@
             onFrame: async () => {
                 await hands.send({image: videoElement});
             },
-            width: 1280,
-            height: 720
+            width: 640,
+            height: 480
         });
-        camera.start();
+        
+        camera.start()
+            .then(() => {
+                showFeedback('📷', 'เริ่มระบบ AR สำเร็จ', 'ใช้กล้องได้แล้ว!', '#00b894');
+            })
+            .catch((err) => {
+                console.error("Camera start failed:", err);
+                alert("ไม่สามารถเข้าถึงหรือเปิดกล้องได้!\n\nสาเหตุที่เป็นไปได้:\n1. ยังไม่ได้รับสิทธิ์อนุญาตกล้องในเบราว์เซอร์\n2. กล้องกำลังถูกใช้งานโดยแอปอื่นอยู่\n3. เบราว์เซอร์หรืออุปกรณ์ไม่รองรับ\n\nคำแนะนำ:\n- ตรวจสอบสิทธิ์การเข้าถึงกล้อง (คลิกสัญลักษณ์แม่กุญแจที่แถบที่อยู่เว็บด้านบน)\n- ปิดแอปอื่นที่กำลังใช้กล้องอยู่แล้วลองใหม่อีกครั้ง");
+            });
     }
 
     function startRenderLoop() {
